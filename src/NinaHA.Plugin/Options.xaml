@@ -62,8 +62,8 @@
                     </Grid>
 
                     <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
-                        <Button HorizontalContentAlignment="Left" Padding="14,5" Command="{Binding TestConnectionCommand}">
-                            <StackPanel Orientation="Horizontal">
+                        <Button HorizontalContentAlignment="Left" Padding="16,6,16,6" Command="{Binding TestConnectionCommand}">
+                            <StackPanel Orientation="Horizontal" Margin="10,3">
                                 <Path Style="{StaticResource IconPath}" Data="{StaticResource HaIcon_Refresh}" />
                                 <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Test connection" />
                             </StackPanel>
@@ -84,7 +84,13 @@
                         HeadersVisibility="Column"
                         ItemsSource="{Binding Rows}">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Width="1.4*" MinWidth="90" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Header="Name" />
+                            <DataGridTemplateColumn Width="1.4*" MinWidth="90" Header="Name">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Margin="2" BorderThickness="0" Background="Transparent" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
                             <DataGridTemplateColumn Width="2.2*" MinWidth="170" Header="Entity">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -122,14 +128,20 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Width="1*" MinWidth="80" Binding="{Binding Preview}" Header="Preview" IsReadOnly="True" />
+                            <DataGridTemplateColumn Width="1*" MinWidth="80" Header="Preview">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Margin="6,0" VerticalAlignment="Center" Text="{Binding Preview}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
                             <DataGridTemplateColumn Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Button
-                                            Margin="2"
-                                            Padding="10,3"
+                                            Margin="3,2"
+                                            Padding="14,4,14,4"
                                             Command="{Binding DataContext.RemoveChannelCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
                                             ToolTip="Remove this channel">
@@ -142,14 +154,14 @@
                     </DataGrid>
 
                     <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
-                        <Button HorizontalContentAlignment="Left" Padding="14,5" Command="{Binding AddChannelCommand}">
-                            <StackPanel Orientation="Horizontal">
+                        <Button HorizontalContentAlignment="Left" Padding="16,6,16,6" Command="{Binding AddChannelCommand}">
+                            <StackPanel Orientation="Horizontal" Margin="10,3">
                                 <Path Style="{StaticResource IconPath}" Data="{StaticResource HaIcon_Plus}" />
                                 <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Add channel" />
                             </StackPanel>
                         </Button>
-                        <Button Margin="8,0,0,0" HorizontalContentAlignment="Left" Padding="14,5" Command="{Binding SaveCommand}">
-                            <StackPanel Orientation="Horizontal">
+                        <Button Margin="8,0,0,0" HorizontalContentAlignment="Left" Padding="16,6,16,6" Command="{Binding SaveCommand}">
+                            <StackPanel Orientation="Horizontal" Margin="10,3">
                                 <Path Style="{StaticResource IconPath}" Data="{StaticResource HaIcon_Save}" />
                                 <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Save" />
                             </StackPanel>
