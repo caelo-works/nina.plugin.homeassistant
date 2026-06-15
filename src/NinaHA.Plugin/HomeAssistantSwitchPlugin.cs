@@ -81,6 +81,9 @@ namespace NinaHA.Plugin {
 
         public ObservableCollection<HaState> AvailableEntities { get; } = new ObservableCollection<HaState>();
 
+        /// <summary>Shared entity/service catalog backing the searchable pickers.</summary>
+        public HaCatalog Catalog => HaCatalog.Instance;
+
         public IReadOnlyList<ChannelType> ChannelTypes { get; } = (ChannelType[])Enum.GetValues(typeof(ChannelType));
 
         public IReadOnlyList<ChannelDirection> ChannelDirections { get; } = (ChannelDirection[])Enum.GetValues(typeof(ChannelDirection));
@@ -113,7 +116,14 @@ namespace NinaHA.Plugin {
                 foreach (var row in Rows) {
                     row.RefreshPreview();
                 }
-                StatusMessage = $"Connected. {AvailableEntities.Count} entities found.";
+
+                await HaCatalog.Instance.RefreshAsync(new HomeAssistantConfig {
+                    BaseUrl = BaseUrl,
+                    Token = Token,
+                    UseWebSocket = UseWebSocket
+                }).ConfigureAwait(true);
+
+                StatusMessage = $"Connected. {AvailableEntities.Count} entities, {Catalog.Services.Count} services found.";
             } catch (Exception ex) {
                 StatusMessage = "Connection error: " + ex.Message;
             } finally {

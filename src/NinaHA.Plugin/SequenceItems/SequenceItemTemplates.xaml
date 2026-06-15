@@ -2,6 +2,7 @@
     x:Class="NinaHA.Plugin.SequenceItems.SequenceItemTemplates"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctrl="clr-namespace:NinaHA.Plugin.Controls"
     xmlns:local="clr-namespace:NinaHA.Plugin.SequenceItems"
     xmlns:nina="clr-namespace:NINA.View.Sequencer;assembly=NINA.Sequencer">
 
@@ -16,11 +17,9 @@
             <nina:SequenceBlockView.SequenceItemContent>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" Text="Service" />
-                    <TextBox MinWidth="80" Margin="5,0,0,0" Text="{Binding Domain}" ToolTip="Domain, e.g. light" />
-                    <TextBlock VerticalAlignment="Center" Text="." />
-                    <TextBox MinWidth="80" Text="{Binding Service}" ToolTip="Service, e.g. turn_on" />
+                    <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Services}" Text="{Binding ServiceId, UpdateSourceTrigger=LostFocus}" ToolTip="domain.service, e.g. light.turn_on" />
                     <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Entity" />
-                    <TextBox MinWidth="120" Margin="5,0,0,0" Text="{Binding EntityId}" ToolTip="Optional entity_id" />
+                    <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding EntityId, UpdateSourceTrigger=LostFocus}" ToolTip="Optional entity_id" />
                     <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Data" />
                     <TextBox MinWidth="140" Margin="5,0,0,0" Text="{Binding Data}" ToolTip="Optional JSON object, e.g. {&quot;brightness_pct&quot;: 60}" />
                 </StackPanel>
@@ -34,7 +33,7 @@
             <nina:SequenceBlockView.SequenceItemContent>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" Text="Wait until" />
-                    <TextBox MinWidth="120" Margin="5,0,0,0" Text="{Binding EntityId}" ToolTip="entity_id" />
+                    <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding EntityId, UpdateSourceTrigger=LostFocus}" ToolTip="entity_id" />
                     <ComboBox MinWidth="120" Margin="5,0,0,0" ItemsSource="{Binding Operators}" SelectedItem="{Binding Comparison}" />
                     <TextBox MinWidth="70" Margin="5,0,0,0" Text="{Binding Value}" />
                     <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Timeout (s)" />
@@ -52,7 +51,7 @@
             <nina:SequenceBlockView.SequenceItemContent>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" Text="While" />
-                    <TextBox MinWidth="120" Margin="5,0,0,0" Text="{Binding EntityId}" ToolTip="entity_id" />
+                    <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding EntityId, UpdateSourceTrigger=LostFocus}" ToolTip="entity_id" />
                     <ComboBox MinWidth="120" Margin="5,0,0,0" ItemsSource="{Binding Operators}" SelectedItem="{Binding Comparison}" />
                     <TextBox MinWidth="70" Margin="5,0,0,0" Text="{Binding Value}" />
                 </StackPanel>
@@ -67,17 +66,15 @@
                 <StackPanel Orientation="Vertical">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center" Text="When" />
-                        <TextBox MinWidth="120" Margin="5,0,0,0" Text="{Binding EntityId}" ToolTip="entity_id" />
+                        <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding EntityId, UpdateSourceTrigger=LostFocus}" ToolTip="entity_id" />
                         <ComboBox MinWidth="120" Margin="5,0,0,0" ItemsSource="{Binding Operators}" SelectedItem="{Binding Comparison}" />
                         <TextBox MinWidth="70" Margin="5,0,0,0" Text="{Binding Value}" />
                     </StackPanel>
                     <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center" Text="Call" />
-                        <TextBox MinWidth="80" Margin="5,0,0,0" Text="{Binding ActionDomain}" ToolTip="Domain, e.g. switch" />
-                        <TextBlock VerticalAlignment="Center" Text="." />
-                        <TextBox MinWidth="80" Text="{Binding ActionService}" ToolTip="Service, e.g. turn_off" />
+                        <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Services}" Text="{Binding ActionServiceId, UpdateSourceTrigger=LostFocus}" ToolTip="domain.service, e.g. switch.turn_off" />
                         <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Entity" />
-                        <TextBox MinWidth="120" Margin="5,0,0,0" Text="{Binding ActionEntityId}" ToolTip="Optional entity_id" />
+                        <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding ActionEntityId, UpdateSourceTrigger=LostFocus}" ToolTip="Optional entity_id" />
                         <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Data" />
                         <TextBox MinWidth="120" Margin="5,0,0,0" Text="{Binding ActionData}" ToolTip="Optional JSON object" />
                     </StackPanel>

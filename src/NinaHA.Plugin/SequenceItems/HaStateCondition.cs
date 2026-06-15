@@ -34,6 +34,7 @@ namespace NinaHA.Plugin.SequenceItems {
         [ImportingConstructor]
         public HaStateCondition(IProfileService profileService) {
             this.profileService = profileService;
+            _ = HaCatalog.Instance.EnsureLoadedAsync(new HaSettingsStore(profileService).Load());
         }
 
         [JsonProperty]
@@ -48,6 +49,8 @@ namespace NinaHA.Plugin.SequenceItems {
         public IList<string> Issues { get => issues; set { issues = value; RaisePropertyChanged(); } }
 
         public ComparisonOperator[] Operators { get; } = (ComparisonOperator[])Enum.GetValues(typeof(ComparisonOperator));
+
+        public HaCatalog Catalog => HaCatalog.Instance;
 
         public override bool Check(ISequenceItem previousItem, ISequenceItem nextItem) {
             try {

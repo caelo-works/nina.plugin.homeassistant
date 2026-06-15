@@ -34,6 +34,7 @@ namespace NinaHA.Plugin.SequenceItems {
         [ImportingConstructor]
         public CallHaServiceInstruction(IProfileService profileService) {
             this.profileService = profileService;
+            _ = HaCatalog.Instance.EnsureLoadedAsync(new HaSettingsStore(profileService).Load());
         }
 
         private CallHaServiceInstruction(CallHaServiceInstruction copyMe) : this(copyMe.profileService) {
@@ -45,16 +46,24 @@ namespace NinaHA.Plugin.SequenceItems {
         }
 
         [JsonProperty]
-        public string Domain { get => domain; set { domain = value; RaisePropertyChanged(); } }
+        public string Domain { get => domain; set { domain = value; RaisePropertyChanged(); RaisePropertyChanged(nameof(ServiceId)); } }
 
         [JsonProperty]
-        public string Service { get => service; set { service = value; RaisePropertyChanged(); } }
+        public string Service { get => service; set { service = value; RaisePropertyChanged(); RaisePropertyChanged(nameof(ServiceId)); } }
 
         [JsonProperty]
         public string EntityId { get => entityId; set { entityId = value; RaisePropertyChanged(); } }
 
         [JsonProperty]
         public string Data { get => data; set { data = value; RaisePropertyChanged(); } }
+
+        /// <summary>Combined "domain.service" used by the searchable service picker.</summary>
+        public string ServiceId {
+            get => HaServiceId.Combine(Domain, Service);
+            set { HaServiceId.Split(value, out domain, out service); RaisePropertyChanged(); RaisePropertyChanged(nameof(Domain)); RaisePropertyChanged(nameof(Service)); }
+        }
+
+        public HaCatalog Catalog => HaCatalog.Instance;
 
         public IList<string> Issues { get => issues; set { issues = value; RaisePropertyChanged(); } }
 

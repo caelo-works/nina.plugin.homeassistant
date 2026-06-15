@@ -13,5 +13,7 @@
 - Plugin logo, embedded and used as the plugin-manager icon (pack:// URI to the embedded resource).
 - Advanced sequencer entities (category "Home Assistant"): Call HA Service, Wait for HA State,
   HA State loop condition, and an On HA State trigger (rising-edge) that calls a service.
+- Searchable, autocompleting pickers for entities and services everywhere (options grid and all
+  sequencer items), backed by a shared catalog loaded from /api/states and /api/services.
 - Unit tests for the value mapper, configuration serialization, REST client, state comparison, and
   service-data parsing.

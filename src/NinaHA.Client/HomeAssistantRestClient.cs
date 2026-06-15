@@ -73,6 +73,42 @@ namespace NinaHA.Client {
             return await resp.Content.ReadFromJsonAsync<HaState>(cancellationToken: ct).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Reads the available services via <c>GET /api/services</c> and returns them as a flat,
+        /// sorted list of <c>domain.service</c> identifiers (e.g. <c>light.turn_on</c>).
+        /// </summary>
+        public async Task<IReadOnlyList<string>> GetServicesAsync(CancellationToken ct = default) {
+            using var req = Request(HttpMethod.Get, "api/services");
+            using var resp = await httpClient.SendAsync(req, ct).ConfigureAwait(false);
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            return ParseServices(json);
+        }
+
+        public static IReadOnlyList<string> ParseServices(string json) {
+            var result = new List<string>();
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind != System.Text.Json.JsonValueKind.Array) {
+                return result;
+            }
+            foreach (var domainEntry in doc.RootElement.EnumerateArray()) {
+                if (!domainEntry.TryGetProperty("domain", out var domainEl) ||
+                    !domainEntry.TryGetProperty("services", out var servicesEl) ||
+                    servicesEl.ValueKind != System.Text.Json.JsonValueKind.Object) {
+                    continue;
+                }
+                var domain = domainEl.GetString();
+                if (string.IsNullOrEmpty(domain)) {
+                    continue;
+                }
+                foreach (var svc in servicesEl.EnumerateObject()) {
+                    result.Add($"{domain}.{svc.Name}");
+                }
+            }
+            result.Sort(StringComparer.OrdinalIgnoreCase);
+            return result;
+        }
+
         /// <summary>Calls a service via <c>POST /api/services/&lt;domain&gt;/&lt;service&gt;</c>.</summary>
         public async Task CallServiceAsync(string domain, string service, IReadOnlyDictionary<string, object?> data, CancellationToken ct = default) {
             using var req = Request(HttpMethod.Post, $"api/services/{Uri.EscapeDataString(domain)}/{Uri.EscapeDataString(service)}");

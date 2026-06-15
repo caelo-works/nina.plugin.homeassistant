@@ -42,6 +42,7 @@ namespace NinaHA.Plugin.SequenceItems {
         [ImportingConstructor]
         public HaStateTrigger(IProfileService profileService) {
             this.profileService = profileService;
+            _ = HaCatalog.Instance.EnsureLoadedAsync(new HaSettingsStore(profileService).Load());
         }
 
         private HaStateTrigger(HaStateTrigger copyMe) : this(copyMe.profileService) {
@@ -65,10 +66,18 @@ namespace NinaHA.Plugin.SequenceItems {
         public string Value { get => value; set { this.value = value; RaisePropertyChanged(); } }
 
         [JsonProperty]
-        public string ActionDomain { get => actionDomain; set { actionDomain = value; RaisePropertyChanged(); } }
+        public string ActionDomain { get => actionDomain; set { actionDomain = value; RaisePropertyChanged(); RaisePropertyChanged(nameof(ActionServiceId)); } }
 
         [JsonProperty]
-        public string ActionService { get => actionService; set { actionService = value; RaisePropertyChanged(); } }
+        public string ActionService { get => actionService; set { actionService = value; RaisePropertyChanged(); RaisePropertyChanged(nameof(ActionServiceId)); } }
+
+        /// <summary>Combined "domain.service" used by the searchable action-service picker.</summary>
+        public string ActionServiceId {
+            get => HaServiceId.Combine(ActionDomain, ActionService);
+            set { HaServiceId.Split(value, out actionDomain, out actionService); RaisePropertyChanged(); RaisePropertyChanged(nameof(ActionDomain)); RaisePropertyChanged(nameof(ActionService)); }
+        }
+
+        public HaCatalog Catalog => HaCatalog.Instance;
 
         [JsonProperty]
         public string ActionEntityId { get => actionEntityId; set { actionEntityId = value; RaisePropertyChanged(); } }
