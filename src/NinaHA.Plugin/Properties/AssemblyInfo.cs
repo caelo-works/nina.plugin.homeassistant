@@ -24,9 +24,11 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("Repository", "https://github.com/caelo-works/nina.plugin.homeassistant")]
 [assembly: AssemblyMetadata("Homepage", "https://github.com/caelo-works/nina.plugin.homeassistant")]
 [assembly: AssemblyMetadata("ChangelogURL", "https://github.com/caelo-works/nina.plugin.homeassistant/releases")]
-// Plugin-manager list icon. An https URL (not a pack:// URI); served as a GitHub release asset
-// (releases/latest/download) so it stays reachable across versions.
-[assembly: AssemblyMetadata("FeaturedImageURL", "https://github.com/caelo-works/nina.plugin.homeassistant/releases/latest/download/logo.png")]
+// Plugin-manager list/description icon.
+// EXPERIMENT: pack:// URI to the embedded resource, to avoid needing a publicly hosted image.
+// If N.I.N.A. does not render this in the plugin list/description, switch back to a public https URL
+// (e.g. a GitHub release asset): https://github.com/caelo-works/nina.plugin.homeassistant/releases/latest/download/logo.png
+[assembly: AssemblyMetadata("FeaturedImageURL", "pack://application:,,,/NinaHA.Plugin;component/Resources/logo.png")]
 [assembly: AssemblyMetadata("Tags", "Home Assistant,Switch,Automation,Equipment")]
 [assembly: AssemblyMetadata("ShortDescription", "Bridge Home Assistant entities into NINA as switch channels (read/write, binary/stepped/analog).")]
 [assembly: AssemblyMetadata("LongDescription",
