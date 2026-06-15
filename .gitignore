@@ -1,0 +1,26 @@
+# Build output
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+
+# NuGet
+*.nupkg
+packages/
+
+# Local secrets (HA tokens, test config) — never commit
+secrets.*
+*.secrets.json
+.env
+.env.*
+appsettings.Local.json
+test-config.local.*

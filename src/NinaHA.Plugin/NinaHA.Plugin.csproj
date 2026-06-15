@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>NinaHA.Plugin</RootNamespace>
+    <AssemblyName>NinaHA.Plugin</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- NINA host metapackage: needed at compile time, but the running NINA app provides these
+         assemblies, so do NOT copy them to the output (ExcludeAssets=runtime). -->
+    <PackageReference Include="NINA.Plugin" Version="3.2.0.9001" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Our own client library: this one IS shipped alongside the plugin. -->
+    <ProjectReference Include="..\NinaHA.Client\NinaHA.Client.csproj" />
+  </ItemGroup>
+
+  <!-- Deploy the plugin DLL and its private dependencies into the NINA plugins folder. -->
+  <Target Name="DeployToNina" AfterTargets="PostBuildEvent">
+    <PropertyGroup>
+      <NinaPluginDir>$(LOCALAPPDATA)\NINA\Plugins\3.0.0\$(AssemblyName)</NinaPluginDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(NinaPluginDir)" />
+    <ItemGroup>
+      <!-- Ship only our own assemblies; the NINA host provides everything else (e.g. WebView2). -->
+      <DeployFiles Include="$(TargetDir)NinaHA.Plugin.dll" />
+      <DeployFiles Include="$(TargetDir)NinaHA.Client.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DeployFiles)" DestinationFolder="$(NinaPluginDir)" SkipUnchangedFiles="false" />
+    <Message Importance="high" Text="Deployed plugin to $(NinaPluginDir)" />
+  </Target>
+
+</Project>
