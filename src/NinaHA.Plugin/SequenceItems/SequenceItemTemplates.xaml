@@ -40,9 +40,14 @@
                     <TextBox MinWidth="50" Margin="5,0,0,0" Text="{Binding TimeoutSeconds}" ToolTip="0 = wait indefinitely" />
                     <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Poll (s)" />
                     <TextBox MinWidth="40" Margin="5,0,0,0" Text="{Binding PollIntervalSeconds}" />
-                    <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontStyle="Italic" Opacity="0.7" Text="{Binding CurrentValue, StringFormat='now: {0}'}" />
                 </StackPanel>
             </nina:SequenceBlockView.SequenceItemContent>
+            <nina:SequenceBlockView.SequenceItemProgressContent>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="Current:" />
+                    <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding CurrentValue}" />
+                </StackPanel>
+            </nina:SequenceBlockView.SequenceItemProgressContent>
         </nina:SequenceBlockView>
     </DataTemplate>
 
@@ -55,9 +60,14 @@
                     <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding EntityId, UpdateSourceTrigger=LostFocus}" ToolTip="entity_id" />
                     <ComboBox MinWidth="120" Margin="5,0,0,0" ItemsSource="{Binding Operators}" SelectedItem="{Binding Comparison}" />
                     <TextBox MinWidth="70" Margin="5,0,0,0" Text="{Binding Value}" />
-                    <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontStyle="Italic" Opacity="0.7" Text="{Binding CurrentValue, StringFormat='now: {0}'}" />
                 </StackPanel>
             </nina:SequenceBlockView.SequenceItemContent>
+            <nina:SequenceBlockView.SequenceItemProgressContent>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="Current:" />
+                    <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding CurrentValue}" />
+                </StackPanel>
+            </nina:SequenceBlockView.SequenceItemProgressContent>
         </nina:SequenceBlockView>
     </DataTemplate>
 
