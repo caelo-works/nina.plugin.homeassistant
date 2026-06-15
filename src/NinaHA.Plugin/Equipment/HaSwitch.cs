@@ -31,7 +31,16 @@ namespace NinaHA.Plugin.Equipment {
         /// <summary>Raises a change notification for <see cref="Value"/> (e.g. on a live WebSocket update).</summary>
         public void NotifyValueChanged() => RaisePropertyChanged(nameof(Value));
 
-        public string Name => string.IsNullOrWhiteSpace(Channel.Name) ? Channel.EntityId : Channel.Name;
+        public string Name {
+            get {
+                var baseName = string.IsNullOrWhiteSpace(Channel.Name) ? Channel.EntityId : Channel.Name;
+                var state = Context.Store.Get(Channel.EntityId);
+                if (state != null && state.TryGetAttributeString("unit_of_measurement", out var unit) && !string.IsNullOrWhiteSpace(unit)) {
+                    return $"{baseName} ({unit})";
+                }
+                return baseName;
+            }
+        }
 
         public string Description => $"{Channel.EntityId} ({Channel.Type})";
 
