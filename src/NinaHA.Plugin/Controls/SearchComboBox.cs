@@ -71,19 +71,46 @@ namespace NinaHA.Plugin.Controls {
             if (SourceItems == null) {
                 return;
             }
-            var count = 0;
+            var total = 0;
             foreach (var item in SourceItems) {
                 var s = item?.ToString();
                 if (s == null) {
                     continue;
                 }
                 if (text.Length == 0 || s.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0) {
-                    results.Add(item!);
-                    if (++count >= MaxResults) {
-                        break;
+                    total++;
+                    if (results.Count < MaxResults) {
+                        results.Add(item!);
                     }
                 }
             }
+            if (total > MaxResults) {
+                results.Add(new TruncationNotice(MaxResults, total));
+            }
         }
+
+        // Render the truncation notice as a disabled, italic, non-selectable hint.
+        protected override void PrepareContainerForItemOverride(DependencyObject element, object item) {
+            base.PrepareContainerForItemOverride(element, item);
+            if (element is ComboBoxItem container) {
+                var notice = item is TruncationNotice;
+                container.IsEnabled = !notice;
+                container.FontStyle = notice ? FontStyles.Italic : FontStyles.Normal;
+                container.Opacity = notice ? 0.7 : 1.0;
+            }
+        }
+    }
+
+    /// <summary>Non-selectable footer shown when the result list is capped.</summary>
+    internal sealed class TruncationNotice {
+        private readonly int shown;
+        private readonly int total;
+
+        public TruncationNotice(int shown, int total) {
+            this.shown = shown;
+            this.total = total;
+        }
+
+        public override string ToString() => $"… showing first {shown} of {total} — refine your search";
     }
 }
