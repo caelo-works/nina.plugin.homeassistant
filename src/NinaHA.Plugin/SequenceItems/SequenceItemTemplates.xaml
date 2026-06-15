@@ -21,7 +21,7 @@
                     <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Entity" />
                     <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding EntityId, UpdateSourceTrigger=LostFocus}" ToolTip="Optional entity_id" />
                     <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Data" />
-                    <TextBox MinWidth="140" Margin="5,0,0,0" Text="{Binding Data}" ToolTip="Optional JSON object, e.g. {&quot;brightness_pct&quot;: 60}" />
+                    <TextBox MinWidth="140" Margin="5,0,0,0" Text="{Binding Data}" ToolTip="Optional JSON object. Supports patterns: $$TARGETNAME$$, $$FILTER$$, $$CAMERA$$, $$GAIN$$, $$OFFSET$$, $$TEMPERATURE$$, $$SQM$$, $$DATE$$, $$TIME$$, $$DATETIME$$" />
                 </StackPanel>
             </nina:SequenceBlockView.SequenceItemContent>
         </nina:SequenceBlockView>
@@ -61,25 +61,19 @@
         </nina:SequenceBlockView>
     </DataTemplate>
 
-    <!--  ===== On HA State trigger =====  -->
-    <DataTemplate DataType="{x:Type local:HaStateTrigger}">
+    <!--  ===== Publish to HA trigger =====  -->
+    <DataTemplate DataType="{x:Type local:PublishToHaTrigger}">
         <nina:SequenceBlockView>
             <nina:SequenceBlockView.SequenceItemContent>
-                <StackPanel Orientation="Vertical">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Text="When" />
-                        <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding EntityId, UpdateSourceTrigger=LostFocus}" ToolTip="entity_id" />
-                        <ComboBox MinWidth="120" Margin="5,0,0,0" ItemsSource="{Binding Operators}" SelectedItem="{Binding Comparison}" />
-                        <TextBox MinWidth="70" Margin="5,0,0,0" Text="{Binding Value}" />
-                    </StackPanel>
-                    <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Text="Call" />
-                        <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Services}" Text="{Binding ActionServiceId, UpdateSourceTrigger=LostFocus}" ToolTip="domain.service, e.g. switch.turn_off" />
-                        <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Entity" />
-                        <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding ActionEntityId, UpdateSourceTrigger=LostFocus}" ToolTip="Optional entity_id" />
-                        <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Data" />
-                        <TextBox MinWidth="120" Margin="5,0,0,0" Text="{Binding ActionData}" ToolTip="Optional JSON object" />
-                    </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="Every" />
+                    <TextBox MinWidth="40" Margin="5,0,0,0" Text="{Binding AfterExposures}" />
+                    <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="exposure(s), call" />
+                    <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Services}" Text="{Binding ServiceId, UpdateSourceTrigger=LostFocus}" ToolTip="domain.service" />
+                    <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Entity" />
+                    <ctrl:SearchComboBox MinWidth="180" Margin="5,0,0,0" SourceItems="{Binding Catalog.Entities}" Text="{Binding EntityId, UpdateSourceTrigger=LostFocus}" ToolTip="Optional entity_id" />
+                    <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="Data" />
+                    <TextBox MinWidth="160" Margin="5,0,0,0" Text="{Binding Data}" ToolTip="JSON; supports $$TARGETNAME$$, $$FILTER$$, $$CAMERA$$, $$GAIN$$, $$OFFSET$$, $$TEMPERATURE$$, $$SQM$$, $$DATE$$, $$TIME$$, $$DATETIME$$" />
                 </StackPanel>
             </nina:SequenceBlockView.SequenceItemContent>
         </nina:SequenceBlockView>

@@ -12,7 +12,11 @@
   channel-state preview column.
 - Plugin logo, embedded and used as the plugin-manager icon (pack:// URI to the embedded resource).
 - Advanced sequencer entities (category "Home Assistant"): Call HA Service, Wait for HA State,
-  HA State loop condition, and an On HA State trigger (rising-edge) that calls a service.
+  HA State loop condition, and a Publish to HA trigger that calls a service every N exposures.
+- Live current-value preview on the Wait for HA State item and the HA State condition (the condition
+  also interrupts its parent block when it becomes false).
+- "$$TOKEN$$" pattern support (TARGETNAME, FILTER, CAMERA, GAIN, OFFSET, TEMPERATURE, SQM, DATE,
+  TIME, DATETIME) in the data payload of Call HA Service and Publish to HA.
 - Searchable, autocompleting pickers for entities and services everywhere (options grid and all
   sequencer items), backed by a shared catalog loaded from /api/states and /api/services.
 - Unit tests for the value mapper, configuration serialization, REST client, state comparison, and
