@@ -27,6 +27,17 @@
     <DataTemplate x:Key="Home Assistant_Options">
         <StackPanel Margin="10" Orientation="Vertical">
 
+            <!--  ============ Header ============  -->
+            <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                <Image
+                    Width="40"
+                    Height="40"
+                    VerticalAlignment="Center"
+                    RenderOptions.BitmapScalingMode="HighQuality"
+                    Source="pack://application:,,,/NinaHA.Plugin;component/Resources/logo.png" />
+                <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Text="Home Assistant" />
+            </StackPanel>
+
             <!--  ============ Connection ============  -->
             <GroupBox Margin="0,0,0,10" Header="Home Assistant connection">
                 <StackPanel Margin="8" Orientation="Vertical">

@@ -21,9 +21,12 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "3.2.0.0")]
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
-[assembly: AssemblyMetadata("Repository", "https://github.com/caelo-works/nina-plugin-homeassistant")]
-[assembly: AssemblyMetadata("Homepage", "https://github.com/caelo-works/nina-plugin-homeassistant")]
-[assembly: AssemblyMetadata("ChangelogURL", "https://github.com/caelo-works/nina-plugin-homeassistant/blob/main/CHANGELOG.md")]
+[assembly: AssemblyMetadata("Repository", "https://github.com/caelo-works/nina.plugin.homeassistant")]
+[assembly: AssemblyMetadata("Homepage", "https://github.com/caelo-works/nina.plugin.homeassistant")]
+[assembly: AssemblyMetadata("ChangelogURL", "https://github.com/caelo-works/nina.plugin.homeassistant/releases")]
+// Plugin-manager list icon. An https URL (not a pack:// URI); served as a GitHub release asset
+// (releases/latest/download) so it stays reachable across versions.
+[assembly: AssemblyMetadata("FeaturedImageURL", "https://github.com/caelo-works/nina.plugin.homeassistant/releases/latest/download/logo.png")]
 [assembly: AssemblyMetadata("Tags", "Home Assistant,Switch,Automation,Equipment")]
 [assembly: AssemblyMetadata("ShortDescription", "Bridge Home Assistant entities into NINA as switch channels (read/write, binary/stepped/analog).")]
 [assembly: AssemblyMetadata("LongDescription",

@@ -24,6 +24,12 @@
     <ProjectReference Include="..\NinaHA.Client\NinaHA.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Plugin logo (canonical copy lives at the repo root). Embedded for in-app branding;
+         the plugin-manager list icon is served from FeaturedImageURL (see AssemblyInfo). -->
+    <Resource Include="..\..\logo.png" Link="Resources\logo.png" />
+  </ItemGroup>
+
   <!-- Deploy the plugin DLL and its private dependencies into the NINA plugins folder.
        Set DeployToNina=false (e.g. while NINA is running and has the DLL locked) to skip. -->
   <Target Name="DeployToNina" AfterTargets="PostBuildEvent" Condition="'$(DeployToNina)' != 'false'">
