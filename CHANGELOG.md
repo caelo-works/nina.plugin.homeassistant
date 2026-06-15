@@ -11,4 +11,7 @@
   read/write/read-write), split into Connection and Switch sections, with button icons and a live
   channel-state preview column.
 - Plugin logo, embedded and used as the plugin-manager icon (pack:// URI to the embedded resource).
-- Unit tests for the value mapper, configuration serialization, and REST client.
+- Advanced sequencer entities (category "Home Assistant"): Call HA Service, Wait for HA State,
+  HA State loop condition, and an On HA State trigger (rising-edge) that calls a service.
+- Unit tests for the value mapper, configuration serialization, REST client, state comparison, and
+  service-data parsing.

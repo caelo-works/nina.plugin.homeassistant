@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using NinaHA.Client.Dto;
@@ -11,40 +10,41 @@ using NinaHA.Client.Dto;
 namespace NinaHA.Client {
 
     /// <summary>
-    /// Minimal REST client for the Home Assistant HTTP API.
-    /// Uses a long-lived access token as a bearer token. Thread-safe for concurrent reads/writes.
+    /// Minimal REST client for the Home Assistant HTTP API. A long-lived access token is sent as a bearer
+    /// token on every request. Instances are cheap: they share a single process-wide <see cref="HttpClient"/>
+    /// (unless one is injected for testing), so they can be created per use without exhausting sockets.
     /// </summary>
     public sealed class HomeAssistantRestClient : IDisposable {
 
-        private readonly HttpClient httpClient;
-        private readonly bool ownsHttpClient;
+        private static readonly HttpClient SharedClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
 
-        /// <summary>
-        /// Creates a client for the given base URL and token.
-        /// </summary>
+        private readonly HttpClient httpClient;
+        private readonly Uri baseUri;
+        private readonly string token;
+
         /// <param name="baseUrl">e.g. <c>http://homeassistant.local:8123</c> (with or without trailing slash).</param>
         /// <param name="token">Long-lived access token.</param>
-        /// <param name="httpClient">Optional injected client (e.g. for tests). When null, one is created and owned.</param>
+        /// <param name="httpClient">Optional injected client (e.g. for tests). When null, a shared client is used.</param>
         public HomeAssistantRestClient(string baseUrl, string token, HttpClient? httpClient = null) {
             if (string.IsNullOrWhiteSpace(baseUrl)) {
                 throw new ArgumentException("Base URL is required.", nameof(baseUrl));
             }
-
-            ownsHttpClient = httpClient == null;
-            this.httpClient = httpClient ?? new HttpClient();
-            this.httpClient.BaseAddress = new Uri(NormalizeBase(baseUrl));
-            this.httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            this.token = token;
+            this.httpClient = httpClient ?? SharedClient;
+            baseUri = new Uri(baseUrl.Trim().TrimEnd('/') + "/");
         }
 
-        private static string NormalizeBase(string baseUrl) {
-            var trimmed = baseUrl.Trim().TrimEnd('/');
-            return trimmed + "/";
+        private HttpRequestMessage Request(HttpMethod method, string relativePath) {
+            var req = new HttpRequestMessage(method, new Uri(baseUri, relativePath));
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return req;
         }
 
         /// <summary>Pings <c>GET /api/</c> to validate the URL and token. Returns true on HTTP 200.</summary>
         public async Task<bool> PingAsync(CancellationToken ct = default) {
             try {
-                using var resp = await httpClient.GetAsync("api/", ct).ConfigureAwait(false);
+                using var req = Request(HttpMethod.Get, "api/");
+                using var resp = await httpClient.SendAsync(req, ct).ConfigureAwait(false);
                 return resp.IsSuccessStatusCode;
             } catch (HttpRequestException) {
                 return false;
@@ -55,7 +55,8 @@ namespace NinaHA.Client {
 
         /// <summary>Reads all entity states via <c>GET /api/states</c>.</summary>
         public async Task<IReadOnlyList<HaState>> GetStatesAsync(CancellationToken ct = default) {
-            using var resp = await httpClient.GetAsync("api/states", ct).ConfigureAwait(false);
+            using var req = Request(HttpMethod.Get, "api/states");
+            using var resp = await httpClient.SendAsync(req, ct).ConfigureAwait(false);
             resp.EnsureSuccessStatusCode();
             var states = await resp.Content.ReadFromJsonAsync<List<HaState>>(cancellationToken: ct).ConfigureAwait(false);
             return states ?? new List<HaState>();
@@ -63,7 +64,8 @@ namespace NinaHA.Client {
 
         /// <summary>Reads a single entity state via <c>GET /api/states/&lt;entity_id&gt;</c>. Returns null on 404.</summary>
         public async Task<HaState?> GetStateAsync(string entityId, CancellationToken ct = default) {
-            using var resp = await httpClient.GetAsync("api/states/" + Uri.EscapeDataString(entityId), ct).ConfigureAwait(false);
+            using var req = Request(HttpMethod.Get, "api/states/" + Uri.EscapeDataString(entityId));
+            using var resp = await httpClient.SendAsync(req, ct).ConfigureAwait(false);
             if (resp.StatusCode == System.Net.HttpStatusCode.NotFound) {
                 return null;
             }
@@ -71,21 +73,16 @@ namespace NinaHA.Client {
             return await resp.Content.ReadFromJsonAsync<HaState>(cancellationToken: ct).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Calls a service via <c>POST /api/services/&lt;domain&gt;/&lt;service&gt;</c>.
-        /// </summary>
-        /// <param name="data">Service payload (typically includes <c>entity_id</c> and parameters).</param>
+        /// <summary>Calls a service via <c>POST /api/services/&lt;domain&gt;/&lt;service&gt;</c>.</summary>
         public async Task CallServiceAsync(string domain, string service, IReadOnlyDictionary<string, object?> data, CancellationToken ct = default) {
-            var url = $"api/services/{Uri.EscapeDataString(domain)}/{Uri.EscapeDataString(service)}";
-            using var content = JsonContent.Create(data);
-            using var resp = await httpClient.PostAsync(url, content, ct).ConfigureAwait(false);
+            using var req = Request(HttpMethod.Post, $"api/services/{Uri.EscapeDataString(domain)}/{Uri.EscapeDataString(service)}");
+            req.Content = JsonContent.Create(data);
+            using var resp = await httpClient.SendAsync(req, ct).ConfigureAwait(false);
             resp.EnsureSuccessStatusCode();
         }
 
         public void Dispose() {
-            if (ownsHttpClient) {
-                httpClient.Dispose();
-            }
+            // The shared client is process-wide; injected clients are owned by the caller. Nothing to dispose.
         }
     }
 }
