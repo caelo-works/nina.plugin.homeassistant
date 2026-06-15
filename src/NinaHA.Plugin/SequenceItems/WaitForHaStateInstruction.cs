@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NINA.Core.Model;
+using NINA.Core.Utility;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.SequenceItem;
 using NINA.Sequencer.Validations;
@@ -31,6 +32,7 @@ namespace NinaHA.Plugin.SequenceItems {
         private string value = string.Empty;
         private int timeoutSeconds = 300;
         private int pollIntervalSeconds = 5;
+        private string currentValue = "—";
         private IList<string> issues = new List<string>();
 
         [ImportingConstructor]
@@ -49,7 +51,10 @@ namespace NinaHA.Plugin.SequenceItems {
         }
 
         [JsonProperty]
-        public string EntityId { get => entityId; set { entityId = value; RaisePropertyChanged(); } }
+        public string EntityId {
+            get => entityId;
+            set { entityId = value; RaisePropertyChanged(); _ = RefreshCurrentValueAsync(); }
+        }
 
         [JsonProperty]
         public ComparisonOperator Comparison { get => comparison; set { comparison = value; RaisePropertyChanged(); } }
@@ -69,6 +74,26 @@ namespace NinaHA.Plugin.SequenceItems {
 
         public HaCatalog Catalog => HaCatalog.Instance;
 
+        /// <summary>Latest known value of the entity, shown live in the UI.</summary>
+        public string CurrentValue { get => currentValue; private set { currentValue = value; RaisePropertyChanged(); } }
+
+        private async Task RefreshCurrentValueAsync() {
+            try {
+                var config = new HaSettingsStore(profileService).Load();
+                if (!config.HasConnection || string.IsNullOrWhiteSpace(EntityId)) {
+                    CurrentValue = "—";
+                    return;
+                }
+                using var rest = new HomeAssistantRestClient(config.BaseUrl, config.Token);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                HaState? state = await rest.GetStateAsync(EntityId, cts.Token);
+                CurrentValue = state?.State ?? "—";
+            } catch (Exception ex) {
+                Logger.Error($"Home Assistant: failed to read '{EntityId}'", ex);
+                CurrentValue = "—";
+            }
+        }
+
         public override async Task Execute(IProgress<ApplicationStatus> progress, CancellationToken token) {
             var config = new HaSettingsStore(profileService).Load();
             using var rest = new HomeAssistantRestClient(config.BaseUrl, config.Token);
@@ -79,6 +104,7 @@ namespace NinaHA.Plugin.SequenceItems {
             while (true) {
                 token.ThrowIfCancellationRequested();
                 HaState? state = await rest.GetStateAsync(EntityId, token);
+                CurrentValue = state?.State ?? "—";
                 if (state != null && StateComparer.Matches(state.State, Value, Comparison)) {
                     return;
                 }
