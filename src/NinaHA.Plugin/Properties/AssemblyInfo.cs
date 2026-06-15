@@ -30,11 +30,23 @@ using System.Runtime.InteropServices;
 // real https URL instead (e.g. a public release asset:
 // https://github.com/caelo-works/nina.plugin.homeassistant/releases/latest/download/logo.png).
 [assembly: AssemblyMetadata("FeaturedImageURL", "pack://application:,,,/NinaHA.Plugin;component/Resources/logo.png")]
-[assembly: AssemblyMetadata("Tags", "Home Assistant,Switch,Automation,Equipment")]
-[assembly: AssemblyMetadata("ShortDescription", "Bridge Home Assistant entities into NINA as switch channels (read/write, binary/stepped/analog).")]
+[assembly: AssemblyMetadata("Tags", "Home Assistant,Switch,Automation,Equipment,Sequencer")]
+[assembly: AssemblyMetadata("ShortDescription", "Bridge Home Assistant into NINA: expose entities as switch channels and drive/read them from advanced sequencer instructions.")]
 [assembly: AssemblyMetadata("LongDescription",
-    "Connect a Home Assistant instance and map its entities to channels of a NINA Switch device. " +
-    "Each channel can be read-only or writable and represents a binary (on/off), stepped (discrete) " +
-    "or analog (numeric) value. Once configured, the hub behaves like any native switch and is usable " +
-    "by all built-in functions and other plugins. Live updates use the Home Assistant WebSocket API " +
-    "with REST polling as a fallback.")]
+    "Connect a Home Assistant instance and integrate it into NINA two ways.\r\n\r\n" +
+    "Switch equipment: map any HA entity to a channel of a NINA Switch device. Each channel can be " +
+    "read-only or writable and represents a binary (on/off), stepped (discrete, e.g. select) or analog " +
+    "(numeric) value, with the unit of measurement shown in the channel name. Once configured, the hub " +
+    "behaves like any native switch and is usable by all built-in functions and other plugins. Live " +
+    "updates use the Home Assistant WebSocket API with REST polling as a fallback.\r\n\r\n" +
+    "Advanced sequencer (category 'Home Assistant'):\r\n" +
+    "- Call HA Service: invoke any domain.service with an optional entity and JSON data. The data " +
+    "supports NINA patterns ($$TARGETNAME$$, $$FILTER$$, $$CAMERA$$, $$GAIN$$, $$OFFSET$$, " +
+    "$$TEMPERATURE$$, $$SQM$$, $$DATE$$, $$TIME$$, $$DATETIME$$).\r\n" +
+    "- Wait for HA State: pause until an entity reaches a state or threshold (with timeout), showing " +
+    "the live value.\r\n" +
+    "- HA State condition: loop while an entity satisfies a comparison; the live value is displayed and " +
+    "the surrounding block is interrupted when it no longer holds.\r\n" +
+    "- Publish to HA: every N exposures, call a HA service to push NINA status (target, filter, frame " +
+    "count, sensor temperature...) for a Home Assistant dashboard.\r\n\r\n" +
+    "Entity and service pickers throughout the UI offer searchable autocompletion.")]
