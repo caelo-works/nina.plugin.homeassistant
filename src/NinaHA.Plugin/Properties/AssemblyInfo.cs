@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Home Assistant")]
-[assembly: AssemblyDescription("Expose Home Assistant entities as NINA switch channels.")]
+[assembly: AssemblyDescription("Expose Home Assistant entities as NINA switch channels and drive/read them from advanced sequencer instructions.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("CaeloWorks")]
 [assembly: AssemblyProduct("Home Assistant")]
