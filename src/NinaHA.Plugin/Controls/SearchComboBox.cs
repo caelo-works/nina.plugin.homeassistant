@@ -1,20 +1,24 @@
 using System;
 using System.Collections;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
+using System.Windows.Input;
 
 namespace NinaHA.Plugin.Controls {
 
     /// <summary>
-    /// An editable combo box with case-insensitive "contains" filtering: as the user types, the drop-down
-    /// shows only matching items. Items are strings; the chosen value is the editable <see cref="ComboBox.Text"/>,
-    /// so bind <c>Text</c> to the target property and <see cref="SourceItems"/> to the candidate list.
-    /// Inherits the standard ComboBox theme.
+    /// An editable combo box with case-insensitive "contains" filtering and autocomplete. As the user
+    /// types, the drop-down shows only matching items, capped at <see cref="MaxResults"/> so it stays fast
+    /// even with thousands of candidates. Items are strings; the chosen value is the editable
+    /// <see cref="ComboBox.Text"/>, so bind <c>Text</c> to the target property and <see cref="SourceItems"/>
+    /// to the candidate list. Inherits the standard ComboBox theme.
     /// </summary>
     public class SearchComboBox : ComboBox {
+
+        private const int MaxResults = 100;
 
         static SearchComboBox() {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(SearchComboBox), new FrameworkPropertyMetadata(typeof(ComboBox)));
@@ -29,53 +33,56 @@ namespace NinaHA.Plugin.Controls {
             set => SetValue(SourceItemsProperty, value);
         }
 
-        // A per-control view so multiple boxes can filter the same underlying collection independently.
-        private readonly CollectionViewSource viewSource = new CollectionViewSource();
-        private string filterText = string.Empty;
-        private bool suppressFilter;
+        private readonly ObservableCollection<object> results = new ObservableCollection<object>();
 
         public SearchComboBox() {
             IsEditable = true;
             IsTextSearchEnabled = false;
             StaysOpenOnEdit = true;
-            AddHandler(TextBoxBase.TextChangedEvent, new TextChangedEventHandler(OnTextChanged));
+            ItemsSource = results;
+            AddHandler(TextBoxBase.TextChangedEvent, new TextChangedEventHandler((_, __) => Rebuild()));
         }
 
         private static void OnSourceItemsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             var box = (SearchComboBox)d;
-            box.viewSource.Source = e.NewValue;
-            if (box.viewSource.View != null) {
-                box.viewSource.View.Filter = box.Matches;
+            if (e.OldValue is INotifyCollectionChanged oldObs) {
+                oldObs.CollectionChanged -= box.OnSourceCollectionChanged;
             }
-            box.ItemsSource = box.viewSource.View;
+            if (e.NewValue is INotifyCollectionChanged newObs) {
+                newObs.CollectionChanged += box.OnSourceCollectionChanged;
+            }
+            box.Rebuild();
         }
 
-        private bool Matches(object item) {
-            if (string.IsNullOrEmpty(filterText)) {
-                return true;
-            }
-            return item?.ToString()?.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0;
-        }
+        private void OnSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => Rebuild();
 
-        private void OnTextChanged(object sender, TextChangedEventArgs e) {
-            if (suppressFilter) {
-                return;
-            }
-            filterText = Text ?? string.Empty;
-            viewSource.View?.Refresh();
-            if (!string.IsNullOrEmpty(filterText) && !IsDropDownOpen) {
+        // Open the drop-down only when the user actually types, so picking an item (mouse/Enter) doesn't reopen it.
+        protected override void OnPreviewTextInput(TextCompositionEventArgs e) {
+            base.OnPreviewTextInput(e);
+            if (!IsDropDownOpen) {
                 IsDropDownOpen = true;
             }
         }
 
-        protected override void OnSelectionChanged(SelectionChangedEventArgs e) {
-            base.OnSelectionChanged(e);
-            // When an item is picked, clear the filter so the full list is available next time.
-            if (SelectedItem != null) {
-                suppressFilter = true;
-                filterText = string.Empty;
-                viewSource.View?.Refresh();
-                suppressFilter = false;
+        /// <summary>Recomputes the (capped) list of matches for the current text.</summary>
+        private void Rebuild() {
+            var text = Text ?? string.Empty;
+            results.Clear();
+            if (SourceItems == null) {
+                return;
+            }
+            var count = 0;
+            foreach (var item in SourceItems) {
+                var s = item?.ToString();
+                if (s == null) {
+                    continue;
+                }
+                if (text.Length == 0 || s.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0) {
+                    results.Add(item!);
+                    if (++count >= MaxResults) {
+                        break;
+                    }
+                }
             }
         }
     }
