@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Home Assistant Switch")]
+[assembly: AssemblyTitle("Home Assistant")]
 [assembly: AssemblyDescription("Expose Home Assistant entities as NINA switch channels.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("CaeloWorks")]
-[assembly: AssemblyProduct("Home Assistant Switch")]
+[assembly: AssemblyProduct("Home Assistant")]
 [assembly: AssemblyCopyright("Copyright © 2026")]
 [assembly: AssemblyCulture("")]
 

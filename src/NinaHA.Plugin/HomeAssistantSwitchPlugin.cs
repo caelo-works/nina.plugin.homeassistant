@@ -41,11 +41,14 @@ namespace NinaHA.Plugin {
             baseUrl = config.BaseUrl;
             token = config.Token;
             useWebSocket = config.UseWebSocket;
-            Channels = new ObservableCollection<SwitchChannel>(config.Channels);
+            Rows = new ObservableCollection<ChannelRowViewModel>();
+            foreach (var channel in config.Channels) {
+                Rows.Add(new ChannelRowViewModel(channel, LookupEntity));
+            }
 
             TestConnectionCommand = new AsyncDelegateCommand(TestConnectionAsync);
             AddChannelCommand = new DelegateCommand(_ => AddChannel());
-            RemoveChannelCommand = new DelegateCommand(p => RemoveChannel(p as SwitchChannel));
+            RemoveChannelCommand = new DelegateCommand(p => RemoveChannel(p as ChannelRowViewModel));
             SaveCommand = new DelegateCommand(_ => SaveConfig());
         }
 
@@ -74,7 +77,7 @@ namespace NinaHA.Plugin {
             private set { isBusy = value; RaisePropertyChanged(); }
         }
 
-        public ObservableCollection<SwitchChannel> Channels { get; }
+        public ObservableCollection<ChannelRowViewModel> Rows { get; }
 
         public ObservableCollection<HaState> AvailableEntities { get; } = new ObservableCollection<HaState>();
 
@@ -107,6 +110,9 @@ namespace NinaHA.Plugin {
                 foreach (var s in states.OrderBy(s => s.EntityId, StringComparer.OrdinalIgnoreCase)) {
                     AvailableEntities.Add(s);
                 }
+                foreach (var row in Rows) {
+                    row.RefreshPreview();
+                }
                 StatusMessage = $"Connected. {AvailableEntities.Count} entities found.";
             } catch (Exception ex) {
                 StatusMessage = "Connection error: " + ex.Message;
@@ -115,13 +121,16 @@ namespace NinaHA.Plugin {
             }
         }
 
+        private HaState? LookupEntity(string entityId) =>
+            AvailableEntities.FirstOrDefault(e => string.Equals(e.EntityId, entityId, StringComparison.OrdinalIgnoreCase));
+
         private void AddChannel() {
-            Channels.Add(new SwitchChannel { Name = "New channel" });
+            Rows.Add(new ChannelRowViewModel(new SwitchChannel { Name = "New channel" }, LookupEntity));
             SaveConfig();
         }
 
-        private void RemoveChannel(SwitchChannel? channel) {
-            if (channel != null && Channels.Remove(channel)) {
+        private void RemoveChannel(ChannelRowViewModel? row) {
+            if (row != null && Rows.Remove(row)) {
                 SaveConfig();
             }
         }
@@ -131,7 +140,7 @@ namespace NinaHA.Plugin {
                 BaseUrl = baseUrl,
                 Token = token,
                 UseWebSocket = useWebSocket,
-                Channels = Channels.ToList()
+                Channels = Rows.Select(r => r.Channel).ToList()
             });
         }
 

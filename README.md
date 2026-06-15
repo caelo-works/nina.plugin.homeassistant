@@ -1,4 +1,4 @@
-# Home Assistant Switch — NINA plugin
+# Home Assistant — NINA plugin
 
 A plugin for [N.I.N.A. (Nighttime Imaging 'N' Astronomy)](https://nighttime-imaging.eu/) that
 exposes [Home Assistant](https://www.home-assistant.io/) entities as channels of a NINA **Switch**
@@ -46,11 +46,11 @@ The build copies `NinaHA.Plugin.dll` and `NinaHA.Client.dll` into
 
 ## Configuration
 
-1. In NINA, open **Options ▸ Plugins ▸ Home Assistant Switch**.
+1. In NINA, open **Options ▸ Plugins ▸ Home Assistant**.
 2. Enter the base URL (e.g. `http://homeassistant.local:8123`) and a long-lived access token,
    then click **Test connection** to load the entity list.
 3. Add channels, pick an entity, type and direction, then **Save**.
-4. Go to **Equipment ▸ Switch**, choose **Home Assistant Switch** and connect.
+4. Go to **Equipment ▸ Switch**, choose **Home Assistant** and connect.
 
 ## License
 

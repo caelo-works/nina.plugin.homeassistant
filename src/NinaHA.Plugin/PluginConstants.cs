@@ -10,6 +10,6 @@ namespace NinaHA.Plugin {
         public const string PluginGuid = "f2134d4c-5b3c-4382-b5da-7523023855d9";
 
         /// <summary>Display name of the plugin and the equipment hub.</summary>
-        public const string PluginName = "Home Assistant Switch";
+        public const string PluginName = "Home Assistant";
     }
 }

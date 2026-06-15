@@ -24,8 +24,9 @@
     <ProjectReference Include="..\NinaHA.Client\NinaHA.Client.csproj" />
   </ItemGroup>
 
-  <!-- Deploy the plugin DLL and its private dependencies into the NINA plugins folder. -->
-  <Target Name="DeployToNina" AfterTargets="PostBuildEvent">
+  <!-- Deploy the plugin DLL and its private dependencies into the NINA plugins folder.
+       Set DeployToNina=false (e.g. while NINA is running and has the DLL locked) to skip. -->
+  <Target Name="DeployToNina" AfterTargets="PostBuildEvent" Condition="'$(DeployToNina)' != 'false'">
     <PropertyGroup>
       <NinaPluginDir>$(LOCALAPPDATA)\NINA\Plugins\3.0.0\$(AssemblyName)</NinaPluginDir>
     </PropertyGroup>
