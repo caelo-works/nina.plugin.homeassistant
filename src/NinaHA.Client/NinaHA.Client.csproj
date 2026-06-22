@@ -8,7 +8,7 @@
     <RootNamespace>NinaHA.Client</RootNamespace>
     <AssemblyName>NinaHA.Client</AssemblyName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
   </PropertyGroup>
 
 </Project>

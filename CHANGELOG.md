@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-06-22
+
+### Fixed
+- Options page: the custom controls now follow the user's NINA theme — the
+  searchable picker adopts the ambient ComboBox style, the token field (masked
+  and revealed) and the show/hide toggle use the NINA theme brushes.
+
 ## [1.2.0] - 2026-06-22
 
 ### Added

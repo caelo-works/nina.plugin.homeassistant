@@ -48,6 +48,9 @@ namespace NinaHA.Plugin.Controls {
             ItemsSource = results;
             AddHandler(TextBoxBase.TextChangedEvent, new TextChangedEventHandler((_, __) => Rebuild()));
             DropDownOpened += (_, __) => CollapseAutoSelection();
+            // NINA themes controls via implicit styles keyed by the exact type, which don't reach a derived
+            // control. Explicitly adopt the ambient ComboBox style so we match the user's chosen theme.
+            SetResourceReference(StyleProperty, typeof(ComboBox));
         }
 
         public override void OnApplyTemplate() {
