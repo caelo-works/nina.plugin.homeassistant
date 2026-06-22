@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-22
+
+### Changed
+- Options page: when a connection is already configured, the channel grid's
+  Preview column now fills automatically at NINA startup, without having to click
+  "Test connection" first.
+
 ## [1.0.1] - 2026-06-22
 
 ### Fixed

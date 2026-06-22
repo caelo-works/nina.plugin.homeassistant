@@ -50,6 +50,12 @@ namespace NinaHA.Plugin {
             AddChannelCommand = new DelegateCommand(_ => AddChannel());
             RemoveChannelCommand = new DelegateCommand(p => RemoveChannel(p as ChannelRowViewModel));
             SaveCommand = new DelegateCommand(_ => SaveConfig());
+
+            // Once configured, fill the entity snapshot (and the grid's Preview column) at startup, so the
+            // user doesn't have to click "Test connection" every time NINA launches.
+            if (config.HasConnection) {
+                _ = InitialLoadAsync();
+            }
         }
 
         public string BaseUrl {
@@ -100,35 +106,49 @@ namespace NinaHA.Plugin {
             IsBusy = true;
             StatusMessage = "Connecting...";
             try {
-                using var rest = new HomeAssistantRestClient(BaseUrl, Token);
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-
-                if (!await rest.PingAsync(cts.Token).ConfigureAwait(true)) {
-                    StatusMessage = "Connection failed. Check the URL and token.";
-                    return;
+                using (var rest = new HomeAssistantRestClient(BaseUrl, Token)) {
+                    if (!await rest.PingAsync(cts.Token).ConfigureAwait(true)) {
+                        StatusMessage = "Connection failed. Check the URL and token.";
+                        return;
+                    }
                 }
 
-                var states = await rest.GetStatesAsync(cts.Token).ConfigureAwait(true);
-                AvailableEntities.Clear();
-                foreach (var s in states.OrderBy(s => s.EntityId, StringComparer.OrdinalIgnoreCase)) {
-                    AvailableEntities.Add(s);
-                }
-                foreach (var row in Rows) {
-                    row.RefreshPreview();
-                }
-
-                await HaCatalog.Instance.RefreshAsync(new HomeAssistantConfig {
-                    BaseUrl = BaseUrl,
-                    Token = Token,
-                    UseWebSocket = UseWebSocket
-                }).ConfigureAwait(true);
-
+                await LoadEntitiesAndCatalogAsync(cts.Token).ConfigureAwait(true);
                 StatusMessage = $"Connected. {AvailableEntities.Count} entities, {Catalog.Services.Count} services found.";
             } catch (Exception ex) {
                 StatusMessage = "Connection error: " + ex.Message;
             } finally {
                 IsBusy = false;
             }
+        }
+
+        // Startup load: silently fill the entity snapshot and previews if a connection is configured.
+        private async Task InitialLoadAsync() {
+            try {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                await LoadEntitiesAndCatalogAsync(cts.Token).ConfigureAwait(true);
+            } catch (Exception ex) {
+                StatusMessage = "Could not load Home Assistant entities: " + ex.Message;
+            }
+        }
+
+        // Fetches the entity states (feeding the Preview column) and refreshes the picker catalog. Shared by
+        // the startup load and the "Test connection" button.
+        private async Task LoadEntitiesAndCatalogAsync(CancellationToken token) {
+            var config = new HomeAssistantConfig { BaseUrl = BaseUrl, Token = Token, UseWebSocket = UseWebSocket };
+            using var rest = new HomeAssistantRestClient(config.BaseUrl, config.Token);
+            var states = await rest.GetStatesAsync(token).ConfigureAwait(true);
+
+            AvailableEntities.Clear();
+            foreach (var s in states.OrderBy(s => s.EntityId, StringComparer.OrdinalIgnoreCase)) {
+                AvailableEntities.Add(s);
+            }
+            foreach (var row in Rows) {
+                row.RefreshPreview();
+            }
+
+            await HaCatalog.Instance.RefreshAsync(config).ConfigureAwait(true);
         }
 
         private HaState? LookupEntity(string entityId) =>
