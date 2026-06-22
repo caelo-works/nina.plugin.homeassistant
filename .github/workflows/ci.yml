@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Build & test (NinaHA.Client)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # Only the platform-agnostic NinaHA.Client library and its tests are built here; the WPF plugin
+      # (net8.0-windows) is Windows-only and not part of CI.
+      - name: Test
+        run: dotnet test tests/NinaHA.Client.Tests/NinaHA.Client.Tests.csproj -c Release

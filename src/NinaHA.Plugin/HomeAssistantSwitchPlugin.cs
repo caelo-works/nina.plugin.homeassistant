@@ -32,6 +32,7 @@ namespace NinaHA.Plugin {
         private bool useWebSocket = true;
         private string statusMessage = string.Empty;
         private bool isBusy;
+        private HaConnectionState connectionState = HaConnectionState.Unknown;
 
         [ImportingConstructor]
         public HomeAssistantSwitchPlugin(IProfileService profileService) {
@@ -83,6 +84,12 @@ namespace NinaHA.Plugin {
             private set { isBusy = value; RaisePropertyChanged(); }
         }
 
+        /// <summary>Drives the colored connection indicator on the options page.</summary>
+        public HaConnectionState ConnectionState {
+            get => connectionState;
+            private set { connectionState = value; RaisePropertyChanged(); }
+        }
+
         public ObservableCollection<ChannelRowViewModel> Rows { get; }
 
         public ObservableCollection<HaState> AvailableEntities { get; } = new ObservableCollection<HaState>();
@@ -109,14 +116,15 @@ namespace NinaHA.Plugin {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
                 using (var rest = new HomeAssistantRestClient(BaseUrl, Token)) {
                     if (!await rest.PingAsync(cts.Token).ConfigureAwait(true)) {
+                        ConnectionState = HaConnectionState.Failed;
                         StatusMessage = "Connection failed. Check the URL and token.";
                         return;
                     }
                 }
 
                 await LoadEntitiesAndCatalogAsync(cts.Token).ConfigureAwait(true);
-                StatusMessage = $"Connected. {AvailableEntities.Count} entities, {Catalog.Services.Count} services found.";
             } catch (Exception ex) {
+                ConnectionState = HaConnectionState.Failed;
                 StatusMessage = "Connection error: " + ex.Message;
             } finally {
                 IsBusy = false;
@@ -129,12 +137,13 @@ namespace NinaHA.Plugin {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
                 await LoadEntitiesAndCatalogAsync(cts.Token).ConfigureAwait(true);
             } catch (Exception ex) {
+                ConnectionState = HaConnectionState.Failed;
                 StatusMessage = "Could not load Home Assistant entities: " + ex.Message;
             }
         }
 
         // Fetches the entity states (feeding the Preview column) and refreshes the picker catalog. Shared by
-        // the startup load and the "Test connection" button.
+        // the startup load and the "Test connection" button; reports the resulting connection status.
         private async Task LoadEntitiesAndCatalogAsync(CancellationToken token) {
             var config = new HomeAssistantConfig { BaseUrl = BaseUrl, Token = Token, UseWebSocket = UseWebSocket };
             using var rest = new HomeAssistantRestClient(config.BaseUrl, config.Token);
@@ -149,6 +158,9 @@ namespace NinaHA.Plugin {
             }
 
             await HaCatalog.Instance.RefreshAsync(config).ConfigureAwait(true);
+
+            ConnectionState = HaConnectionState.Connected;
+            StatusMessage = $"Connected. {AvailableEntities.Count} entities, {Catalog.Services.Count} services.";
         }
 
         private HaState? LookupEntity(string entityId) =>
@@ -179,5 +191,12 @@ namespace NinaHA.Plugin {
         protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
+
+    /// <summary>Connection status surfaced by the options page indicator dot.</summary>
+    public enum HaConnectionState {
+        Unknown,
+        Connected,
+        Failed
     }
 }

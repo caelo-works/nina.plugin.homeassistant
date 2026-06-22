@@ -1,0 +1,22 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Creates (or updates) the release for the pushed tag and attaches logo.png, so the plugin logo is
+      # reachable at a stable https URL (e.g. .../releases/latest/download/logo.png) for the public catalog.
+      - name: Create release with logo asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" logo.png --title "${GITHUB_REF_NAME}" --generate-notes

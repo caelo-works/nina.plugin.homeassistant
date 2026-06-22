@@ -6,6 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-22
+
+### Added
+- Options page: a colored connection indicator (grey / green / red) next to the
+  status message, reflecting the last load or connection test.
+- Continuous integration (GitHub Actions) running the `NinaHA.Client` unit tests
+  on every push and pull request.
+- Release workflow publishing `logo.png` as a release asset when a `v*` tag is
+  pushed, giving the logo a stable https URL.
+
+### Changed
+- Options page: the access token is now masked by default, with an eye toggle to
+  reveal it.
+- The Home Assistant base URL is normalized (scheme defaulted to `http://`,
+  trailing slash removed), so inputs like `homeassistant.local:8123` connect.
+
 ## [1.1.0] - 2026-06-22
 
 ### Changed

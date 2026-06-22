@@ -14,8 +14,8 @@ using System.Runtime.InteropServices;
 // Unique, permanent plugin identifier (also serves as the settings store key).
 [assembly: Guid(NinaHA.Plugin.PluginConstants.PluginGuid)]
 
-[assembly: AssemblyVersion("1.1.0.0")]
-[assembly: AssemblyFileVersion("1.1.0.0")]
+[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyFileVersion("1.2.0.0")]
 
 // --- NINA plugin manifest metadata (surfaced in the NINA plugin manager) ---
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "3.2.0.0")]

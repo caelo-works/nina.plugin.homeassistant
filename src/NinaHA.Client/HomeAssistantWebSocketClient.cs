@@ -41,7 +41,7 @@ namespace NinaHA.Client {
         }
 
         internal static Uri BuildSocketUri(string baseUrl) {
-            var b = new UriBuilder(baseUrl.Trim().TrimEnd('/'));
+            var b = new UriBuilder(HaUrl.Normalize(baseUrl));
             b.Scheme = b.Scheme == "https" ? "wss" : "ws";
             b.Path = b.Path.TrimEnd('/') + "/api/websocket";
             return b.Uri;

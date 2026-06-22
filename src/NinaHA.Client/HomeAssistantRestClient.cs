@@ -31,7 +31,7 @@ namespace NinaHA.Client {
             }
             this.token = token;
             this.httpClient = httpClient ?? SharedClient;
-            baseUri = new Uri(baseUrl.Trim().TrimEnd('/') + "/");
+            baseUri = new Uri(HaUrl.Normalize(baseUrl) + "/");
         }
 
         private HttpRequestMessage Request(HttpMethod method, string relativePath) {
