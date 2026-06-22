@@ -1,22 +1,65 @@
 name: Release
 
+# Push a tag like v1.2.2 to build the plugin, package both DLLs into a zip, generate the NINA plugin
+# manifest (Installer.Type: ARCHIVE + SHA256 checksum) and publish a GitHub Release. The release assets
+# (NinaHA.Plugin.zip + manifest.json) provide the Installer.URL / Installer.Checksum for the manifest PR
+# against isbeorn/nina.plugin.manifests.
 on:
   push:
-    tags: [ 'v*' ]
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
 
+env:
+  PLUGIN_DLL: NinaHA.Plugin
+  ARCHIVE_NAME: NinaHA.Plugin
+
 jobs:
   release:
-    name: Publish GitHub release
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # Creates (or updates) the release for the pushed tag and attaches logo.png, so the plugin logo is
-      # reachable at a stable https URL (e.g. .../releases/latest/download/logo.png) for the public catalog.
-      - name: Create release with logo asset
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" logo.png --title "${GITHUB_REF_NAME}" --generate-notes
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build (Release)
+        run: dotnet build src/NinaHA.Plugin/NinaHA.Plugin.csproj -c Release -p:DeployToNina=false
+
+      - name: Package both DLLs + manifest
+        shell: pwsh
+        run: |
+          $out = "src/NinaHA.Plugin/bin/Release/net8.0-windows"
+          # NINA only needs these two assemblies (mirrors the DeployToNina target). Put exactly them in a
+          # clean folder, because CreateManifest -includeAll zips every file in the folder.
+          New-Item -ItemType Directory -Force -Path pkg | Out-Null
+          Copy-Item "$out/NinaHA.Plugin.dll" pkg/ -Force
+          Copy-Item "$out/NinaHA.Client.dll" pkg/ -Force
+
+          $installerUrl = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.ARCHIVE_NAME }}.zip"
+          curl -L -o CreateManifest.ps1 https://raw.githubusercontent.com/isbeorn/nina.plugin.manifests/main/tools/CreateManifest.ps1
+          pwsh ./CreateManifest.ps1 -file "pkg/${{ env.PLUGIN_DLL }}.dll" -installerUrl $installerUrl -createArchive -includeAll -archiveName "${{ env.ARCHIVE_NAME }}"
+
+          $zip = "${{ env.ARCHIVE_NAME }}.zip"
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+          "$hash  $zip" | Out-File -Encoding ascii SHA256SUMS.txt
+          Write-Output "Archive SHA256: $hash"
+          Write-Output "---- manifest.json ----"
+          Get-Content manifest.json
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          files: |
+            NinaHA.Plugin.zip
+            manifest.json
+            SHA256SUMS.txt
+            logo.png
+          generate_release_notes: true
+          fail_on_unmatched_files: true

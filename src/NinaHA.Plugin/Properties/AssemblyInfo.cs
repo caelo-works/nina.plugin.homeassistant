@@ -14,8 +14,8 @@ using System.Runtime.InteropServices;
 // Unique, permanent plugin identifier (also serves as the settings store key).
 [assembly: Guid(NinaHA.Plugin.PluginConstants.PluginGuid)]
 
-[assembly: AssemblyVersion("1.2.1.0")]
-[assembly: AssemblyFileVersion("1.2.1.0")]
+[assembly: AssemblyVersion("1.2.2.0")]
+[assembly: AssemblyFileVersion("1.2.2.0")]
 
 // --- NINA plugin manifest metadata (surfaced in the NINA plugin manager) ---
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "3.2.0.0")]
@@ -24,12 +24,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("Repository", "https://github.com/caelo-works/nina.plugin.homeassistant")]
 [assembly: AssemblyMetadata("Homepage", "https://github.com/caelo-works/nina.plugin.homeassistant")]
 [assembly: AssemblyMetadata("ChangelogURL", "https://github.com/caelo-works/nina.plugin.homeassistant/releases")]
-// Plugin-manager list/description icon. A pack:// URI to the embedded resource renders fine for an
-// installed plugin (confirmed on N.I.N.A. 3.2), so no externally hosted image is required.
-// Note: if this plugin is ever published to the public N.I.N.A. plugin catalog, that catalog needs a
-// real https URL instead (e.g. a public release asset:
-// https://github.com/caelo-works/nina.plugin.homeassistant/releases/latest/download/logo.png).
-[assembly: AssemblyMetadata("FeaturedImageURL", "pack://application:,,,/NinaHA.Plugin;component/Resources/logo.png")]
+// Plugin-manager list/description icon. The public N.I.N.A. plugin catalog requires a real https URL,
+// so this points to the logo published as a release asset (the same image is also embedded as a
+// resource for in-app use).
+[assembly: AssemblyMetadata("FeaturedImageURL", "https://github.com/caelo-works/nina.plugin.homeassistant/releases/latest/download/logo.png")]
 [assembly: AssemblyMetadata("Tags", "Home Assistant,Switch,Automation,Equipment,Sequencer")]
 [assembly: AssemblyMetadata("ShortDescription", "Bridge Home Assistant into NINA: expose entities as switch channels and drive/read them from advanced sequencer instructions.")]
 [assembly: AssemblyMetadata("LongDescription",

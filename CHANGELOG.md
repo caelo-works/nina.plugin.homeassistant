@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-06-22
+
+### Changed
+- `FeaturedImageURL` now points to the logo published as a release asset (https),
+  as required by the public N.I.N.A. plugin catalog.
+- Release workflow now builds and packages the plugin (both DLLs) into a zip with
+  a SHA256 checksum and a generated manifest, for submission to the N.I.N.A.
+  community plugin manifest repository.
+
 ## [1.2.1] - 2026-06-22
 
 ### Fixed
