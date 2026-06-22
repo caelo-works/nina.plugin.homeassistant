@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace NinaHA.Plugin.Controls {
 
@@ -34,13 +36,23 @@ namespace NinaHA.Plugin.Controls {
         }
 
         private readonly ObservableCollection<object> results = new ObservableCollection<object>();
+        private TextBox? editableTextBox;
 
         public SearchComboBox() {
             IsEditable = true;
             IsTextSearchEnabled = false;
+            // Don't let the result list's current-item drive the selection, otherwise refiltering
+            // clears SelectedItem and wipes the editable text the user is working on.
+            IsSynchronizedWithCurrentItem = false;
             StaysOpenOnEdit = true;
             ItemsSource = results;
             AddHandler(TextBoxBase.TextChangedEvent, new TextChangedEventHandler((_, __) => Rebuild()));
+            DropDownOpened += (_, __) => CollapseAutoSelection();
+        }
+
+        public override void OnApplyTemplate() {
+            base.OnApplyTemplate();
+            editableTextBox = GetTemplateChild("PART_EditableTextBox") as TextBox;
         }
 
         private static void OnSourceItemsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
@@ -58,34 +70,75 @@ namespace NinaHA.Plugin.Controls {
 
         // Open the drop-down only when the user actually types, so picking an item (mouse/Enter) doesn't reopen it.
         protected override void OnPreviewTextInput(TextCompositionEventArgs e) {
+            // The ComboBox auto-selects all the text on focus / drop-down open. Collapse that before this
+            // keystroke is applied, otherwise the key would replace the whole value instead of inserting.
+            CollapseFullSelection();
             base.OnPreviewTextInput(e);
             if (!IsDropDownOpen) {
-                IsDropDownOpen = true;
+                // Defer opening: opening synchronously here re-selects all the text before the keystroke is
+                // applied, which would again make the key replace the entire value.
+                Dispatcher.BeginInvoke(new Action(() => {
+                    if (!IsDropDownOpen) {
+                        IsDropDownOpen = true;
+                    }
+                }), DispatcherPriority.Background);
             }
         }
 
+        // The editable ComboBox selects all its text on focus and when the drop-down opens; left in place,
+        // the next keystroke replaces the whole value. Collapse only that automatic full-selection (caret to
+        // the end); a partial selection or a caret the user placed (e.g. by clicking) is left untouched.
+        private void CollapseFullSelection() {
+            var tb = editableTextBox;
+            if (tb != null && tb.Text.Length > 0 && tb.SelectionLength == tb.Text.Length) {
+                tb.CaretIndex = tb.Text.Length;
+            }
+        }
+
+        private void CollapseAutoSelection() =>
+            Dispatcher.BeginInvoke(new Action(CollapseFullSelection), DispatcherPriority.Input);
+
         /// <summary>Recomputes the (capped) list of matches for the current text.</summary>
         private void Rebuild() {
-            var text = Text ?? string.Empty;
-            results.Clear();
-            if (SourceItems == null) {
-                return;
-            }
-            var total = 0;
-            foreach (var item in SourceItems) {
-                var s = item?.ToString();
-                if (s == null) {
-                    continue;
-                }
-                if (text.Length == 0 || s.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0) {
-                    total++;
-                    if (results.Count < MaxResults) {
-                        results.Add(item!);
+            // Read the live text from the editable box (ComboBox.Text can lag a keystroke behind during
+            // editing). We only ever read it here — never write it — so editing is never disturbed.
+            var text = editableTextBox?.Text ?? Text ?? string.Empty;
+
+            // Compute the (capped) matches for the current text.
+            var matches = new List<object>();
+            if (SourceItems != null) {
+                var total = 0;
+                foreach (var item in SourceItems) {
+                    var s = item?.ToString();
+                    if (s == null) {
+                        continue;
+                    }
+                    if (text.Length == 0 || s.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0) {
+                        total++;
+                        if (matches.Count < MaxResults) {
+                            matches.Add(item!);
+                        }
                     }
                 }
+                if (total > MaxResults) {
+                    matches.Add(new TruncationNotice(MaxResults, total));
+                }
             }
-            if (total > MaxResults) {
-                results.Add(new TruncationNotice(MaxResults, total));
+
+            // Reconcile the bound list in place. Clear()+Add would raise a Reset, which makes the
+            // editable ComboBox drop its selection and wipe the text being edited; granular
+            // Replace/Add/Remove edits avoid that.
+            while (results.Count > matches.Count) {
+                results.RemoveAt(results.Count - 1);
+            }
+            for (var i = 0; i < matches.Count; i++) {
+                if (i < results.Count) {
+                    if (!Equals(results[i], matches[i])) {
+                        results[i] = matches[i];
+                    }
+                } else {
+                    results.Add(matches[i]);
+                }
             }
         }
 

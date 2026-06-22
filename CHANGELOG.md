@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-06-22
+
+### Fixed
+- Options page: the "Use WebSocket" connection toggle now has a visible label
+  ("Live updates"), since the NINA theme renders a checkbox as an unlabelled
+  on/off switch.
+- Searchable entity/service picker: editing an already-entered value no longer
+  wipes it. The editable combo box selected all of its text when its drop-down
+  opened, so the first keystroke replaced the whole value; the automatic
+  full-selection is now collapsed so typing inserts at the caret.
+
 ## [1.0.0] - 2026-06-22
 
 ### Added

@@ -59,7 +59,11 @@
                         <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,4,8,4" VerticalAlignment="Center" Text="Token" />
                         <TextBox Grid.Row="1" Grid.Column="1" Margin="0,4" Text="{Binding Token, UpdateSourceTrigger=PropertyChanged}" ToolTip="Long-lived access token" />
 
-                        <CheckBox Grid.Row="2" Grid.Column="1" Margin="0,6" Content="Use WebSocket for live updates (REST fallback)" IsChecked="{Binding UseWebSocket}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,6,8,4" VerticalAlignment="Center" Text="Live updates" />
+                        <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,6,0,0" Orientation="Horizontal">
+                            <CheckBox VerticalAlignment="Center" IsChecked="{Binding UseWebSocket}" ToolTip="On: subscribe over WebSocket for real-time updates. Off: refresh by REST polling." />
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="Use WebSocket (REST polling fallback)" />
+                        </StackPanel>
                     </Grid>
 
                     <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
