@@ -49,8 +49,11 @@ namespace NinaHA.Plugin {
             try {
                 using var rest = new HomeAssistantRestClient(config.BaseUrl, config.Token);
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                var states = await rest.GetStatesAsync(cts.Token).ConfigureAwait(false);
-                var serviceList = await rest.GetServicesAsync(cts.Token).ConfigureAwait(false);
+                var statesTask = rest.GetStatesAsync(cts.Token);
+                var servicesTask = rest.GetServicesAsync(cts.Token);
+                await Task.WhenAll(statesTask, servicesTask).ConfigureAwait(false);
+                var states = await statesTask.ConfigureAwait(false);
+                var serviceList = await servicesTask.ConfigureAwait(false);
 
                 Entities = states.Select(s => s.EntityId)
                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList();

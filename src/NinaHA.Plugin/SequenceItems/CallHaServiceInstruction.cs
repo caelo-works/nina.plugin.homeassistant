@@ -88,8 +88,8 @@ namespace NinaHA.Plugin.SequenceItems {
 
         public bool Validate() {
             var found = new List<string>();
-            if (!new HaSettingsStore(profileService).Load().HasConnection) {
-                found.Add("Home Assistant is not configured (Options > Plugins > Home Assistant).");
+            if (!HaSequenceSupport.IsConfigured(profileService)) {
+                found.Add(HaSequenceSupport.NotConfiguredMessage);
             }
             if (string.IsNullOrWhiteSpace(Domain)) {
                 found.Add("Service domain is required.");

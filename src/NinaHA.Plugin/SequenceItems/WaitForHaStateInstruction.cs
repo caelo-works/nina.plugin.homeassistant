@@ -32,7 +32,7 @@ namespace NinaHA.Plugin.SequenceItems {
         private string value = string.Empty;
         private int timeoutSeconds = 300;
         private int pollIntervalSeconds = 5;
-        private string currentValue = "—";
+        private string currentValue = HaSequenceSupport.NoValue;
         private IList<string> issues = new List<string>();
 
         [ImportingConstructor]
@@ -78,20 +78,7 @@ namespace NinaHA.Plugin.SequenceItems {
         public string CurrentValue { get => currentValue; private set { currentValue = value; RaisePropertyChanged(); } }
 
         private async Task RefreshCurrentValueAsync() {
-            try {
-                var config = new HaSettingsStore(profileService).Load();
-                if (!config.HasConnection || string.IsNullOrWhiteSpace(EntityId)) {
-                    CurrentValue = "—";
-                    return;
-                }
-                using var rest = new HomeAssistantRestClient(config.BaseUrl, config.Token);
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                HaState? state = await rest.GetStateAsync(EntityId, cts.Token);
-                CurrentValue = state?.State ?? "—";
-            } catch (Exception ex) {
-                Logger.Error($"Home Assistant: failed to read '{EntityId}'", ex);
-                CurrentValue = "—";
-            }
+            CurrentValue = await HaSequenceSupport.ReadCurrentValueAsync(profileService, EntityId);
         }
 
         public override async Task Execute(IProgress<ApplicationStatus> progress, CancellationToken token) {
@@ -104,7 +91,7 @@ namespace NinaHA.Plugin.SequenceItems {
             while (true) {
                 token.ThrowIfCancellationRequested();
                 HaState? state = await rest.GetStateAsync(EntityId, token);
-                CurrentValue = state?.State ?? "—";
+                CurrentValue = state?.State ?? HaSequenceSupport.NoValue;
                 if (state != null && StateComparer.Matches(state.State, Value, Comparison)) {
                     return;
                 }
@@ -118,8 +105,8 @@ namespace NinaHA.Plugin.SequenceItems {
 
         public bool Validate() {
             var found = new List<string>();
-            if (!new HaSettingsStore(profileService).Load().HasConnection) {
-                found.Add("Home Assistant is not configured (Options > Plugins > Home Assistant).");
+            if (!HaSequenceSupport.IsConfigured(profileService)) {
+                found.Add(HaSequenceSupport.NotConfiguredMessage);
             }
             if (string.IsNullOrWhiteSpace(EntityId)) {
                 found.Add("Entity id is required.");
