@@ -1,78 +1,103 @@
-# Home Assistant — NINA plugin
+<div align="center">
 
-A plugin for [N.I.N.A. (Nighttime Imaging 'N' Astronomy)](https://nighttime-imaging.eu/) that
-integrates [Home Assistant](https://www.home-assistant.io/) in two ways: it exposes HA entities as
-channels of a NINA **Switch** device, and it adds **advanced sequencer** instructions to drive and
-read Home Assistant from a sequence.
+# Home Assistant
 
-Once configured, the switch hub behaves like any native switch: it can be driven by NINA's built-in
-functions (e.g. the *Set Switch Value* instruction), conditions, and other plugins — without them
-needing to know Home Assistant is behind it.
+### Expose your smart-home entities as N.I.N.A. switches and drive Home Assistant from the advanced sequencer.
+
+[![Version](https://img.shields.io/github/v/release/caelo-works/nina.plugin.homeassistant?style=for-the-badge&labelColor=0f172a&color=22d3ee&label=version)](https://github.com/caelo-works/nina.plugin.homeassistant/releases/latest)
+[![N.I.N.A.](https://img.shields.io/badge/N.I.N.A.-%E2%89%A5%203.2-67e8f9?style=for-the-badge&labelColor=0f172a)](https://nighttime-imaging.eu/)
+[![Status](https://img.shields.io/badge/status-active-34d399?style=for-the-badge&labelColor=0f172a)](https://nina-plugins.caelo.works/en/plugins/home-assistant)
+[![License](https://img.shields.io/badge/license-MPL--2.0-94a3b8?style=for-the-badge&labelColor=0f172a)](LICENSE.txt)
+[![Website](https://img.shields.io/badge/%E2%86%92%20see%20all%20plugins-nina--plugins.caelo.works-0f172a?style=for-the-badge&labelColor=22d3ee)](https://nina-plugins.caelo.works/en)
+
+<a href="https://nina-plugins.caelo.works/en"><img src="https://nina-plugins.caelo.works/assets/readme-banner.png" alt="CaeloWorks · N.I.N.A. Plugins" width="75%"></a>
+
+</div>
+
+---
+
+## Overview
+
+Home Assistant bridges your [Home Assistant](https://www.home-assistant.io/) instance into
+[N.I.N.A.](https://nighttime-imaging.eu/) in two ways. It exposes any HA entity as a channel of a
+native **Switch** device, so power boxes, dew heaters, relays, sensors and more become usable by all
+of N.I.N.A.'s built-in functions and other plugins, without them knowing Home Assistant is behind it.
+And it adds a set of **advanced sequencer** instructions to call services, wait on states, branch on
+conditions and publish N.I.N.A. status back to Home Assistant from a sequence.
+
+> 📖 **Full details, screenshots & docs:** **[nina-plugins.caelo.works/en/plugins/home-assistant](https://nina-plugins.caelo.works/en/plugins/home-assistant)**
 
 ## Features
 
-### Switch equipment
+| | |
+|---|---|
+| 🔌 **Switch equipment** | Map any HA entity to a Switch channel: **read-only / write / read-write**, typed **binary** (on/off), **stepped** (discrete, e.g. a `select`) or **analog** (numeric, with min/max/step from the entity). The unit of measurement is shown in the channel name, e.g. `Terrace temp (°C)`. |
+| 🧩 **Advanced sequencer** | *Call HA Service*, *Wait for HA State*, *HA State* loop condition and *Publish to HA* trigger, in the **Home Assistant** category. The data payload supports N.I.N.A. patterns (`$$TARGETNAME$$`, `$$FILTER$$`, `$$CAMERA$$`, `$$GAIN$$`, `$$OFFSET$$`, `$$TEMPERATURE$$`, `$$SQM$$`, `$$DATE$$`, `$$TIME$$`, `$$DATETIME$$`). |
+| ⚡ **Live updates** | State changes stream in over the Home Assistant **WebSocket** API, with **REST polling** as an automatic fallback. |
+| 🔎 **Searchable everywhere** | Entity and service fields use searchable, autocompleting pickers; the options grid preview fills automatically at startup once configured. |
 
-- Connect to a Home Assistant instance with a long-lived access token.
-- Map any number of entities to switch channels, each:
-  - **read-only**, **write-only** or **read/write**, and
-  - typed as **binary** (on/off), **stepped** (discrete options, e.g. a `select`) or **analog**
-    (numeric, with min/max/step taken from the entity).
-- The channel name shows the entity's unit of measurement, e.g. `Terrace temp (°C)`.
-- Live updates via the Home Assistant **WebSocket** API, with **REST polling** as a fallback.
+**Channel type mapping**
 
-### Advanced sequencer (category "Home Assistant")
-
-- **Call HA Service** — invoke any `domain.service` with an optional entity and JSON data. The data
-  supports NINA patterns: `$$TARGETNAME$$`, `$$FILTER$$`, `$$CAMERA$$`, `$$GAIN$$`, `$$OFFSET$$`,
-  `$$TEMPERATURE$$`, `$$SQM$$`, `$$DATE$$`, `$$TIME$$`, `$$DATETIME$$`.
-- **Wait for HA State** — pause until an entity reaches a state/threshold (with timeout), showing the
-  live value.
-- **HA State** (loop condition) — run while an entity satisfies a comparison; the live value is shown
-  and the surrounding block is interrupted when it no longer holds.
-- **Publish to HA** (trigger) — every N exposures, call a HA service to push NINA status (target,
-  filter, frame count, sensor temperature…) to an HA entity, e.g. for a dashboard.
-
-Entity and service fields throughout the UI use searchable, autocompleting pickers.
-
-## Channel type mapping
-
-| Type | Read (state → value) | Min/Max/Step | Write (value → service) |
-|------|----------------------|--------------|--------------------------|
+| Type | Read (state → value) | Min / Max / Step | Write (value → service) |
+|------|----------------------|------------------|--------------------------|
 | Binary | `on`/`true`/… → 1, else 0 | 0 / 1 / 1 | `<domain>.turn_on` / `turn_off` |
 | Stepped | index of state in options | 0 / N-1 / 1 | `select.select_option` |
 | Analog | numeric state | entity `min`/`max`/`step` (or overrides) | `number`/`input_number.set_value`, `light` brightness, `fan` percentage |
 
-## Repository layout
+## Installation
 
-```
-src/NinaHA.Client    .NET 8 library: HA REST + WebSocket clients, state cache, config, value mapping
-src/NinaHA.Plugin    NINA plugin (WPF): equipment provider/hub/switches, options page, sequencer items
-tests/               xUnit tests for the client library
-```
+### From N.I.N.A.'s plugin manager (recommended)
 
-## Build & install
+1. In N.I.N.A., go to **Plugins → Available**.
+2. Find **Home Assistant** (CaeloWorks) in the list and click **Install**.
+3. **Restart N.I.N.A.** The plugin appears under **Plugins** and adds a **Home Assistant** Switch device.
 
-Requires the .NET 8 SDK on Windows (NINA is Windows/WPF only).
+### Manual install
 
-```
-dotnet build src/NinaHA.Plugin/NinaHA.Plugin.csproj -c Release
-```
+Download `NinaHA.Plugin.zip` from the
+**[Releases](https://github.com/caelo-works/nina.plugin.homeassistant/releases/latest)**, extract the
+two DLLs (`NinaHA.Plugin.dll` + `NinaHA.Client.dll`) into your N.I.N.A. plugins folder
+(`%LOCALAPPDATA%\NINA\Plugins\<NINA version>\NinaHA.Plugin\`), then restart N.I.N.A.
 
-The build copies `NinaHA.Plugin.dll` and `NinaHA.Client.dll` into
-`%LOCALAPPDATA%\NINA\Plugins\3.0.0\NinaHA.Plugin\`. Restart NINA to load the plugin.
+> **Requires N.I.N.A. 3.2 or newer.**
 
-## Configuration
+## Getting started
 
-1. In NINA, open **Options ▸ Plugins ▸ Home Assistant**.
-2. Enter the base URL (e.g. `http://homeassistant.local:8123`) and a long-lived access token,
-   then click **Test connection** to load the entity and service lists.
-3. Add channels, pick an entity, type and direction, then **Save**.
-4. Go to **Equipment ▸ Switch**, choose **Home Assistant** and connect.
+1. Open **Options → Plugins → Home Assistant**. Enter the base URL (e.g.
+   `http://homeassistant.local:8123`) and a long-lived access token, then click **Test connection** to
+   load the entity and service lists.
+2. **Add channels**: pick an entity, a type (binary / stepped / analog) and a direction, then **Save**.
+3. Go to **Equipment → Switch**, choose **Home Assistant** and **Connect**. Your channels are now
+   driveable by native functions (e.g. *Set Switch Value*), conditions and other plugins.
+4. In the **Advanced Sequencer**, use the **Home Assistant** instructions (they reuse the same
+   connection settings).
 
-The Home Assistant sequencer instructions reuse the same connection settings, so a single
-*Test connection* (or save) populates the pickers everywhere.
+## Links
 
-## License
+- 🌐 **Plugin page:** [nina-plugins.caelo.works/en/plugins/home-assistant](https://nina-plugins.caelo.works/en/plugins/home-assistant)
+- 📦 **Releases:** [github.com/caelo-works/nina.plugin.homeassistant/releases](https://github.com/caelo-works/nina.plugin.homeassistant/releases)
+- 🏠 **Home Assistant:** [home-assistant.io](https://www.home-assistant.io/)
 
-[MPL-2.0](LICENSE.txt).
+## Screenshots
+
+<div align="center">
+
+![Home Assistant plugin options page in N.I.N.A.](https://nina-plugins.caelo.works/assets/plugins/home-assistant-1-options.webp)
+
+![Home Assistant entities as a N.I.N.A. Switch device](https://nina-plugins.caelo.works/assets/plugins/home-assistant-2-switch.webp)
+
+![Home Assistant advanced sequencer instructions](https://nina-plugins.caelo.works/assets/plugins/home-assistant-3-sequencer.webp)
+
+</div>
+
+---
+
+<div align="center">
+
+### 🌌 More N.I.N.A. plugins by CaeloWorks
+
+**[Explore the full catalogue → nina-plugins.caelo.works](https://nina-plugins.caelo.works/en)**
+
+<sub>Made by <a href="https://caelo.works">CaeloWorks</a> · astrophotography software, firmware & hardware · MPL-2.0 License</sub>
+
+</div>
